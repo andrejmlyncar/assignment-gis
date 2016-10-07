@@ -30,6 +30,7 @@ function getFeature1(req, res, next) {
         .catch(function (err) {
             return next(err);
         });
+    console.log("Feature1 executed");
 }
 
 function getFeature2(req, res, next) {
