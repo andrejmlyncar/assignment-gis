@@ -7,7 +7,7 @@ var options = {
 var pgp = require('pg-promise')(options);
 
 var cn = {
-    host: '192.168.1.106',
+    host: '10.62.44.110',
     port: 5432,
     database: 'natural_earth',
     user: 'postgres',

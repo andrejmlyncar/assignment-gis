@@ -9,6 +9,8 @@
     <meta name="author" content="">
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
     <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <link rel='stylesheet' href='/stylesheets/style.css'/>
@@ -21,8 +23,8 @@
 
 <body>
 
+<% if(!auth_required) { %>
 <div id="wrapper">
-
     <div id="sidebar-wrapper">
         <ul class="sidebar-nav">
             <li class="sidebar-brand">
@@ -37,6 +39,7 @@
                     <a id='f1' onclick="feature1()" href="#">Feature 1</a>
                     <a id="f2" onclick="feature2()" href="#">Feature 2</a>
                     <a href="">Feature 3</a>
+                    <a id="clean-all" onclick="cleanMapElements()" href="#">Clean Map</a>
                 </div>
             </li>
             <li>
@@ -61,17 +64,34 @@
             </div>
         </div>
     </div>
-
-    <script>
-
-    </script>
-
-
 </div>
 
 <script src="/javascripts/jquery.js"></script>
 <script src="/javascripts/bootstrap.min.js"></script>
+<% } else { %>
+<div class="container">
 
+    <div class="col-sm-6 col-sm-offset-3">
+
+        <h1><span class="fa fa-sign-in"></span> Login</h1>
+
+        <!-- LOGIN FORM -->
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" class="form-control" name="email">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" name="password">
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg">Login</button>
+        </form>
+    </div>
+</div>
+
+<% } %>
 </body>
 
 </html>

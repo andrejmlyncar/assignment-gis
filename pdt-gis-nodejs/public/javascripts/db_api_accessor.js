@@ -2,7 +2,8 @@
  * Created by Andrej on 10/7/2016.
  */
 
-function api_call_get(call_name, get_data, callback) {
+var spawnedLayers = [];
+function apiCallGet(call_name, get_data, callback) {
     $.get("api/" + call_name, get_data, function (data) {
         if (callback !== null) {
             callback(data);
@@ -11,9 +12,9 @@ function api_call_get(call_name, get_data, callback) {
 }
 
 function feature1() {
-    api_call_get('feature1', null, function (data) {
-        console.log(data.data.st_asgeojson);
-
+    apiCallGet('feature1', null, function (data) {
+        var layerId = 'airport';
+        updateLayerStack(layerId);
         map.addSource(
             "airport", {
                 "type": "geojson",
@@ -32,7 +33,7 @@ function feature1() {
         );
 
         map.addLayer({
-            "id": "airport",
+            "id": 'airport',
             "type": "symbol",
             "source": "airport",
             "layout": {
@@ -43,38 +44,28 @@ function feature1() {
                 "text-anchor": "top"
             }
         });
+
     });
 }
 
-function parse_query_results(data, main_type, icon) {
-    var result = [];
-    for (var i = 0; i < data.length; i++) {
-        var element = {
-            type: main_type,
-            properties: {title: data[i].name, icon: icon},
-            geometry: JSON.parse(data[i].st_asgeojson)
-        };
-        result.push(element);
-    }
-    return result;
-}
 
 function feature2() {
-    api_call_get('feature2', null, function (data) {
+    apiCallGet('feature2', null, function (data) {
         console.log(data.data[0].st_asgeojson);
-
+        var layerId = 'airports';
+        updateLayerStack(layerId);
         map.addSource(
             "airports", {
                 "type": "geojson",
                 "data": {
                     "type": "FeatureCollection",
-                    "features": parse_query_results(data.data, "Feature", "airport")
+                    "features": parseQueryResults(data.data, "Feature", "airport")
                 }
             }
         );
 
         map.addLayer({
-            "id": "airports",
+            "id": layerId,
             "type": "symbol",
             "source": "airports",
             "layout": {
@@ -87,4 +78,38 @@ function feature2() {
         });
     });
 
+}
+
+function updateLayerStack(layerId) {
+    console.log('updating layer stack');
+    if (map.getLayer(layerId) != undefined) {
+        console.log('method was executed before, removing layer');
+        map.removeLayer(layerId);
+        map.removeSource(layerId);
+    } else {
+        spawnedLayers.push(layerId);
+    }
+}
+
+function parseQueryResults(data, mainType, icon) {
+    var result = [];
+    for (var i = 0; i < data.length; i++) {
+        var element = {
+            type: mainType,
+            properties: {title: data[i].name, icon: icon},
+            geometry: JSON.parse(data[i].st_asgeojson)
+        };
+        result.push(element);
+    }
+    return result;
+}
+
+function cleanMapElements() {
+    var i = spawnedLayers.length;
+    while (spawnedLayers.length != 0) {
+        i--;
+        map.removeLayer(spawnedLayers[i]);
+        map.removeSource(spawnedLayers[i]);
+        spawnedLayers.splice($.inArray(spawnedLayers[i], spawnedLayers), 1);
+    }
 }
