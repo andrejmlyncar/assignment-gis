@@ -11,47 +11,8 @@ function apiCallGet(call_name, get_data, callback) {
     }, 'json');
 }
 
-function feature1() {
-    apiCallGet('feature1', null, function (data) {
-        var layerId = 'airport';
-        updateLayerStack(layerId);
-        map.addSource(
-            "airport", {
-                "type": "geojson",
-                "data": {
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": JSON.parse(data.data.st_asgeojson),
-                        "properties": {
-                            "icon": "airport",
-                            "title": data.data.name
-                        }
-                    }]
-                }
-            }
-        );
-
-        map.addLayer({
-            "id": 'airport',
-            "type": "symbol",
-            "source": "airport",
-            "layout": {
-                "icon-image": "{icon}-15",
-                "text-field": "{title}",
-                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                "text-offset": [0, 0.6],
-                "text-anchor": "top"
-            }
-        });
-
-    });
-}
-
-
-function feature2() {
-    apiCallGet('feature2', null, function (data) {
-        console.log(data.data[0].st_asgeojson);
+function getAirports() {
+    apiCallGet('airports', null, function (data) {
         var layerId = 'airports';
         updateLayerStack(layerId);
         map.addSource(
@@ -73,15 +34,27 @@ function feature2() {
                 "text-field": "{title}",
                 "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
                 "text-offset": [0, 0.6],
-                "text-anchor": "top"
+                "text-anchor": "top",
+                "text-size": 12
             }
         });
     });
+}
 
+function fillAirportDetails(popup, featureData) {
+    apiCallGet('airports/' + featureData.properties.id, null, function (data) {
+        var description = "<h5> Airport Details of <strong>" + data.data.name + "</strong></h5>" +
+            "<p>" +
+            "City: " + data.data.city +
+            "<br>" +
+            "Timezone: " + data.data.timezone +
+            "</p>";
+        popup.setHTML(description);
+    });
 }
 
 function updateLayerStack(layerId) {
-    console.log('updating layer stack');
+    console.log('Updating layer stack');
     if (map.getLayer(layerId) != undefined) {
         console.log('method was executed before, removing layer');
         map.removeLayer(layerId);
@@ -96,7 +69,7 @@ function parseQueryResults(data, mainType, icon) {
     for (var i = 0; i < data.length; i++) {
         var element = {
             type: mainType,
-            properties: {title: data[i].name, icon: icon},
+            properties: {title: data[i].name, icon: icon, id: data[i].id},
             geometry: JSON.parse(data[i].st_asgeojson)
         };
         result.push(element);

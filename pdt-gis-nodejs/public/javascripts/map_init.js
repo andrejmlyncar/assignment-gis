@@ -8,3 +8,27 @@ var map = new mapboxgl.Map({
     zoom: 3
 });
 console.log("Map container initialized");
+defineMapEvents();
+
+
+function defineMapEvents() {
+    map.on('click', function (e) {
+        var features = map.queryRenderedFeatures(e.point, {layers: ['airports']});
+
+        if (!features.length) {
+            return;
+        }
+
+        var feature = features[0];
+
+        var popup = new mapboxgl.Popup()
+            .setLngLat(feature.geometry.coordinates)
+            .addTo(map);
+        fillAirportDetails(popup, feature);
+    });
+
+    map.on('mousemove', function (e) {
+        var features = map.queryRenderedFeatures(e.point, { layers: ['airports'] });
+        map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    });
+}

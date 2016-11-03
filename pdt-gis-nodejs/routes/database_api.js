@@ -7,41 +7,41 @@ var options = {
 var pgp = require('pg-promise')(options);
 
 var cn = {
-    host: '10.62.44.110',
+    host: '192.168.1.111',
     port: 5432,
-    database: 'natural_earth',
+    database: 'open_flights',
     user: 'postgres',
     password: 'Password1'
 };
 
 var db_instance = pgp(cn);
 
-function getFeature1(req, res, next) {
-    console.log("Executing feature1");
-    db_instance.one('select *, st_asgeojson(wkb_geometry) from ne_10m_airports where abbrev=\'BTS\'')
+function getAirports(req, res, next) {
+    console.log("Getting all airports");
+    db_instance.any('SELECT airport_id AS id, name, ST_ASGEOJSON(wkb_geometry) FROM airports')
         .then(function (data) {
             res.status(200)
                 .json({
                     status: 'success',
                     data: data,
-                    message: 'Query1 successfully processed'
+                    message: 'Query successfully processed'
                 });
         })
         .catch(function (err) {
             return next(err);
         });
-    console.log("Feature1 executed");
+
 }
 
-function getFeature2(req, res, next) {
-    console.log("Executing feature2");
-    db_instance.any('select *, st_asgeojson(wkb_geometry) from ne_10m_airports')
+function getAirportDetails(req, res, next) {
+    console.log("Getting airport details");
+    db_instance.one('SELECT airport_id AS id, name, city, timezone, ST_ASGEOJSON(wkb_geometry) FROM airports WHERE airport_id = ' + req.params.airport_id)
         .then(function (data) {
             res.status(200)
                 .json({
                     status: 'success',
                     data: data,
-                    message: 'Query2 successfully processed'
+                    message: 'Query successfully processed'
                 });
         })
         .catch(function (err) {
@@ -49,12 +49,8 @@ function getFeature2(req, res, next) {
         });
 }
 
-function getFeature3(req, res, next) {
-    console.log("Executing feature3");
-}
 
 module.exports = {
-    getFeature1: getFeature1,
-    getFeature2: getFeature2,
-    getFeature3: getFeature3
+    getAirports: getAirports,
+    getAirportDetails: getAirportDetails
 };
