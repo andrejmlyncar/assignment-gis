@@ -35,7 +35,23 @@ function getAirports(req, res, next) {
 
 function getAirportDetails(req, res, next) {
     console.log("Getting airport details");
-    db_instance.one('SELECT airport_id AS id, name, city, timezone, ST_ASGEOJSON(wkb_geometry) FROM airports WHERE airport_id = ' + req.params.airport_id)
+    db_instance.one('SELECT airport_id AS id, name, city, timezone, tzdb, "iata/faa" AS iata, ST_ASGEOJSON(wkb_geometry) FROM airports WHERE airport_id = ' + req.params.airport_id)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function getAirportRoutes(req, res, next) {
+    db_instance.any('SELECT source_airport_id, st_asgeojson(r.wkb_geometry), destination_airport_id, dair.name AS destination_airport FROM routes r ' +
+        'JOIN airports dair on dair.airport_id =  r.destination_airport_id where source_airport_id = ' + req.params.airport_id)
         .then(function (data) {
             res.status(200)
                 .json({
@@ -52,5 +68,6 @@ function getAirportDetails(req, res, next) {
 
 module.exports = {
     getAirports: getAirports,
-    getAirportDetails: getAirportDetails
+    getAirportDetails: getAirportDetails,
+    getAirportRoutes: getAirportRoutes
 };

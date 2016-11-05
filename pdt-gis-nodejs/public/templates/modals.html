@@ -1,0 +1,27 @@
+<div aria-hidden="true" style="display: none;" class="modal fade" id="route-search-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <h4 id='modal-airport-name'>Search for Travel Routes From</h4>
+                    <p>Test modal body</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default btn-flat" data-dismiss="modal">Cancel</button>
+                <button id="route-search-button" type="button" class="btn btn-info btn-flat" data-dismiss="modal"
+                        value="">Search
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#route-search-button").click(function () {
+        findRoutesFromAirport($("#route-search-button").val(), 1000);
+    });
+</script>

@@ -18,6 +18,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.25.1/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v0.25.1/mapbox-gl.css' rel='stylesheet'/>
     <script src='/javascripts/db_api_accessor.js'></script>
+    <script src='/javascripts/jquery.js'></script>
 
 </head>
 
@@ -87,6 +88,14 @@
 </div>
 
 <% } %>
+
+<div id="includedModals"></div>
+<script>
+    $(function(){
+        $("#includedModals").load("/templates/modals.html");
+    });
+</script>
+
 </body>
 
 </html>

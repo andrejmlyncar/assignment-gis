@@ -17,6 +17,7 @@ router.get('/', function (req, res, next) {
 var db = require('./database_api.js');
 router.get('/api/airports', db.getAirports);
 router.get('/api/airports/:airport_id', db.getAirportDetails);
+router.get('/api/airports/:airport_id/routes/:distance', db.getAirportRoutes);
 
 module.exports = router;
 

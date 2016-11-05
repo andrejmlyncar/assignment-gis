@@ -45,18 +45,53 @@ function fillAirportDetails(popup, featureData) {
     apiCallGet('airports/' + featureData.properties.id, null, function (data) {
         var description = "<h5> Airport Details of <strong>" + data.data.name + "</strong></h5>" +
             "<p>" +
-            "City: " + data.data.city +
+            "<strong>City:</strong> " + data.data.city +
             "<br>" +
-            "Timezone: " + data.data.timezone +
-            "</p>";
+            "<strong>IATA/FAA Code:</strong> " + data.data.iata +
+            "<br>" +
+            "<strong>Timezone:</strong> " + data.data.timezone +
+            "<br>" +
+            "<strong>Daylight Savings Time:</strong> " + data.data.tzdb +
+            "</p>" +
+            "<button id='route-search' onclick='showRouteSearchModal(\"" + data.data.name + "\"," + data.data.id + ")' class=\"btn btn-default\">Show Route Searcher</button>";
+
         popup.setHTML(description);
     });
 }
 
+
+function findRoutesFromAirport(airport_id, distance) {
+    apiCallGet('airports/' + airport_id + '/routes/' + distance, null, function (data) {
+        var layerId = "routes_" + airport_id;
+        updateLayerStack(layerId);
+        map.addSource(
+            layerId, {
+                "type": "geojson",
+                "data": {
+                    "type": "FeatureCollection",
+                    "features": parseQueryResults(data.data, "Feature", null)
+                }
+            }
+        );
+
+        map.addLayer({
+            "id": layerId,
+            "type": "line",
+            "source": layerId,
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#ff66ff",
+                "line-width": 1
+            }
+        });
+    });
+}
+
 function updateLayerStack(layerId) {
-    console.log('Updating layer stack');
     if (map.getLayer(layerId) != undefined) {
-        console.log('method was executed before, removing layer');
         map.removeLayer(layerId);
         map.removeSource(layerId);
     } else {
@@ -85,4 +120,10 @@ function cleanMapElements() {
         map.removeSource(spawnedLayers[i]);
         spawnedLayers.splice($.inArray(spawnedLayers[i], spawnedLayers), 1);
     }
+}
+
+function showRouteSearchModal(airport_name, airport_id) {
+    $('#route-search-modal').modal('show');
+    $('#modal-airport-name').append(airport_name);
+    $('#route-search-button').val(airport_id);
 }
