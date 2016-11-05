@@ -66,7 +66,7 @@ function getAirportRoutes(req, res, next) {
 }
 
 function getRouteDetails(req, res, next) {
-    db_instance.one('SELECT s.name as a_from, d.name AS a_to, ST_Distance(s.wkb_geometry::geography, d.wkb_geometry::geography) AS distance from routes r ' +
+    db_instance.one('SELECT s.name || \'-\' ||s.city as a_from, d.name || \'-\' || d.city AS a_to, ST_Distance(s.wkb_geometry::geography, d.wkb_geometry::geography) AS distance from routes r ' +
         'JOIN airports s ON s.airport_id = r.source_airport_id ' +
         'JOIN airports d ON d.airport_id = r.destination_airport_id ' +
         'WHERE id = ' + req.params.route_id)
