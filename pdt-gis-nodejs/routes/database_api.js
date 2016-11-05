@@ -50,8 +50,26 @@ function getAirportDetails(req, res, next) {
 }
 
 function getAirportRoutes(req, res, next) {
-    db_instance.any('SELECT source_airport_id, st_asgeojson(r.wkb_geometry), destination_airport_id, dair.name AS destination_airport FROM routes r ' +
+    db_instance.any('SELECT id, source_airport_id, st_asgeojson(r.wkb_geometry), destination_airport_id AS destination_airport FROM routes r ' +
         'JOIN airports dair on dair.airport_id =  r.destination_airport_id where source_airport_id = ' + req.params.airport_id)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function getRouteDetails(req, res, next) {
+    db_instance.one('SELECT s.name as a_from, d.name AS a_to, ST_Distance(s.wkb_geometry::geography, d.wkb_geometry::geography) AS distance from routes r ' +
+        'JOIN airports s ON s.airport_id = r.source_airport_id ' +
+        'JOIN airports d ON d.airport_id = r.destination_airport_id ' +
+        'WHERE id = ' + req.params.route_id)
         .then(function (data) {
             res.status(200)
                 .json({
@@ -69,5 +87,6 @@ function getAirportRoutes(req, res, next) {
 module.exports = {
     getAirports: getAirports,
     getAirportDetails: getAirportDetails,
-    getAirportRoutes: getAirportRoutes
+    getAirportRoutes: getAirportRoutes,
+    getRouteDetails: getRouteDetails,
 };

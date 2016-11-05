@@ -6,3 +6,7 @@ a {
   width: 1600px;
   height: 900px;
 }
+
+.popup-button {
+  margin-bottom: 10px;
+}

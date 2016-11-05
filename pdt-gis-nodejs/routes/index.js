@@ -17,8 +17,8 @@ router.get('/', function (req, res, next) {
 var db = require('./database_api.js');
 router.get('/api/airports', db.getAirports);
 router.get('/api/airports/:airport_id', db.getAirportDetails);
-router.get('/api/airports/:airport_id/routes/:distance', db.getAirportRoutes);
-
+router.get('/api/airports/:airport_id/routes/dist=:distance', db.getAirportRoutes);
+router.get('/api/routes/:route_id', db.getRouteDetails);
 module.exports = router;
 
 function isAuthRequired(req, res, next) {

@@ -61,7 +61,7 @@ function fillAirportDetails(popup, featureData) {
 
 
 function findRoutesFromAirport(airport_id, distance) {
-    apiCallGet('airports/' + airport_id + '/routes/' + distance, null, function (data) {
+    apiCallGet('airports/' + airport_id + '/routes/dist=' + distance, null, function (data) {
         var layerId = "routes_" + airport_id;
         updateLayerStack(layerId);
         map.addSource(
@@ -84,9 +84,50 @@ function findRoutesFromAirport(airport_id, distance) {
             },
             "paint": {
                 "line-color": "#ff66ff",
-                "line-width": 1
+                "line-width": 3
             }
         });
+
+        map.on('click', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: [layerId]});
+
+            if (!features.length) {
+                return;
+            }
+
+            var feature = features[0];
+            var popup = new mapboxgl.Popup()
+                .setLngLat(map.unproject(e.point))
+                .addTo(map);
+            fillRouteDetails(popup, feature);
+        });
+
+        map.on('mousemove', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: [layerId]});
+            map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+        });
+    });
+}
+
+function fillRouteDetails(popup, featureData) {
+    apiCallGet('routes/' + featureData.properties.id, null, function (data) {
+        var distance = data.data.distance / 1000;
+
+        var description = "<h5> Route Details of Route <strong>" + featureData.properties.id + "</strong></h5>" +
+            "<p>" +
+            "<strong>Source:</strong> " + data.data.a_from +
+            "<br>" +
+            "<strong>Destination:</strong> " + data.data.a_to +
+            "<br>" +
+            "<strong>Distance:</strong> " + distance.toPrecision(6) + "km" +
+            "<br>" +
+            "<div class='text-center'>" +
+            "<button id='route-search-dest' class=\"btn btn-info popup-button\">Destination Alternatives</button> <br>" +
+            "<button id='route-search-src' class=\"btn btn-info popup-button\">Source Alternatives</button> <br>" +
+            "<button id='route-search-comb' class=\"btn btn-info popup-button\">Combined Alternatives</button>" +
+            "</div>";
+
+        popup.setHTML(description);
     });
 }
 

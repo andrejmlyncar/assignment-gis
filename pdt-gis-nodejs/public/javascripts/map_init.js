@@ -28,7 +28,8 @@ function defineMapEvents() {
     });
 
     map.on('mousemove', function (e) {
-        var features = map.queryRenderedFeatures(e.point, { layers: ['airports'] });
+        var features = map.queryRenderedFeatures(e.point, {layers: ['airports']});
         map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
     });
+
 }
