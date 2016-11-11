@@ -85,10 +85,55 @@ function getRouteDetails(req, res, next) {
         });
 }
 
+function getRouteAlternatives(req, res, next) {
+    var alternativeType = req.params.alternativeType;
+    var query;
+    if (alternativeType == "source") {
+        console.log("Searching for source alternatives");
+        query = "SELECT id, st_asgeojson(r.wkb_geometry) FROM routes r " +
+            "JOIN airports alt ON r.destination_airport_id = alt.airport_id " +
+            "WHERE r.source_airport_id = (SELECT source_airport_id from routes Where id = " + req.params.route_id + ") " +
+            "AND ST_DISTANCE(alt.wkb_geometry::geography, (SELECT d.wkb_geometry::geography FROM airports d WHERE d.airport_id = " +
+            "(SELECT destination_airport_id from routes WHERE id = " + req.params.route_id + ")))<200000" +
+            "AND id != " + req.params.route_id;
+    } else if (alternativeType == "destination") {
+        query = "SELECT id, st_asgeojson(r.wkb_geometry) FROM routes r " +
+            "JOIN airports alt ON r.source_airport_id = alt.airport_id " +
+            "WHERE r.destination_airport_id = (SELECT destination_airport_id from routes Where id = " + req.params.route_id + ")" +
+            "AND ST_DISTANCE(alt.wkb_geometry::geography, (SELECT d.wkb_geometry::geography FROM airports d WHERE d.airport_id = " +
+            "(SELECT source_airport_id from routes Where id = " + req.params.route_id + ")))<200000 " +
+            "AND id != " + req.params.route_id;
+    } else if (alternativeType == "combined") {
+        query = "SELECT id, st_asgeojson(r.wkb_geometry) FROM routes r " +
+            "JOIN airports dalt ON r.destination_airport_id = dalt.airport_id " +
+            "JOIN airports salt ON r.source_airport_id = salt.airport_id " +
+            "AND ST_DISTANCE(salt.wkb_geometry::geography, " +
+            "(SELECT d.wkb_geometry::geography FROM airports d WHERE d.airport_id = (SELECT source_airport_id from routes Where id = " + req.params.route_id + ")))<200000 " +
+            "AND ST_DISTANCE(dalt.wkb_geometry::geography, " +
+            "(SELECT d.wkb_geometry::geography FROM airports d WHERE d.airport_id = (SELECT destination_airport_id from routes Where id = " + req.params.route_id + ")))<200000" +
+            "AND id != " + req.params.route_id;
+    } else {
+        return next("Error: Invalid")
+    }
+    console.log(query);
+    db_instance.any(query)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
 
 module.exports = {
     getAirports: getAirports,
     getAirportDetails: getAirportDetails,
     getAirportRoutes: getAirportRoutes,
-    getRouteDetails: getRouteDetails
+    getRouteDetails: getRouteDetails,
+    getRouteAlternatives: getRouteAlternatives
 };

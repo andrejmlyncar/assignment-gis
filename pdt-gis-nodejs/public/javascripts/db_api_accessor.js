@@ -109,6 +109,62 @@ function findRoutesFromAirport(airport_id, distance) {
     });
 }
 
+function getAlternatives(route_id, type) {
+    apiCallGet('routes/' + route_id + '/alternatives/type=' + type, null, function (data) {
+        var layerId = type + "_alternatives_" + route_id;
+        var lineColour = "#1166ff";
+        if(type=="source") {
+            lineColour= "#aa6633"
+        } else if(type=="destination") {
+            lineColour = "#aa4488";
+        }
+
+        updateLayerStack(layerId);
+        map.addSource(
+            layerId, {
+                "type": "geojson",
+                "data": {
+                    "type": "FeatureCollection",
+                    "features": parseQueryResults(data.data, "Feature", null)
+                }
+            }
+        );
+
+        map.addLayer({
+            "id": layerId,
+            "type": "line",
+            "source": layerId,
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": lineColour,
+                "line-width": 3
+            }
+        });
+
+        map.on('click', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: [layerId]});
+
+            if (!features.length) {
+                return;
+            }
+
+            var feature = features[0];
+            var popup = new mapboxgl.Popup()
+                .setLngLat(map.unproject(e.point))
+                .addTo(map);
+            fillRouteDetails(popup, feature);
+        });
+
+        map.on('mousemove', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: spawnedLayers});
+            map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+        });
+    });
+}
+
 function fillRouteDetails(popup, featureData) {
     apiCallGet('routes/' + featureData.properties.id, null, function (data) {
         var distance = data.data.distance / 1000;
@@ -122,9 +178,9 @@ function fillRouteDetails(popup, featureData) {
             "<strong>Distance:</strong> " + distance.toPrecision(6) + "km" +
             "<br>" +
             "<div class='text-center'>" +
-            "<button id='route-search-dest' class=\"btn btn-info popup-button\">Destination Alternatives</button> <br>" +
-            "<button id='route-search-src' class=\"btn btn-info popup-button\">Source Alternatives</button> <br>" +
-            "<button id='route-search-comb' class=\"btn btn-info popup-button\">Combined Alternatives</button>" +
+            "<button id='route-search-src' onclick='getAlternatives("+featureData.properties.id + ", \"destination\")'  class=\"btn btn-info popup-button\">Source Alternatives</button> <br>" +
+            "<button id='route-search-dest' onclick='getAlternatives("+ featureData.properties.id + ", \"source\")' class=\"btn btn-info popup-button\">Destination Alternatives</button> <br>" +
+            "<button id='route-search-comb' onclick='getAlternatives("+ featureData.properties.id + ", \"combined\")' class=\"btn btn-info popup-button\">Combined Alternatives</button>" +
             "</div>";
 
         popup.setHTML(description);

@@ -19,6 +19,7 @@ router.get('/api/airports', db.getAirports);
 router.get('/api/airports/:airport_id', db.getAirportDetails);
 router.get('/api/airports/:airport_id/routes/dist=:distance', db.getAirportRoutes);
 router.get('/api/routes/:route_id', db.getRouteDetails);
+router.get('/api/routes/:route_id/alternatives/type=:alternativeType', db.getRouteAlternatives);
 module.exports = router;
 
 function isAuthRequired(req, res, next) {
