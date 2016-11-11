@@ -115,8 +115,53 @@ function getRouteAlternatives(req, res, next) {
     } else {
         return next("Error: Invalid")
     }
-    console.log(query);
+
     db_instance.any(query)
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function getAirportCountries(req, res, next) {
+    db_instance.any("SELECT DISTINCT country from airports order by country")
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function getAirportsBasedOnCountry(req, res, next) {
+    db_instance.any("SELECT airport_id, name || '-' || city as airport from airports WHERE country = '" + req.params.country + "' order by airport")
+        .then(function (data) {
+            res.status(200)
+                .json({
+                    status: 'success',
+                    data: data,
+                    message: 'Query successfully processed'
+                });
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+}
+
+function getAirportRoutesSearch(req, res, next) {
+    db_instance.any("SELECT id, ST_ASGEOJSON(wkb_geometry) from routes where destination_airport_id = " + req.params.destination + " AND source_airport_id = " + req.params.source)
         .then(function (data) {
             res.status(200)
                 .json({
@@ -135,5 +180,8 @@ module.exports = {
     getAirportDetails: getAirportDetails,
     getAirportRoutes: getAirportRoutes,
     getRouteDetails: getRouteDetails,
-    getRouteAlternatives: getRouteAlternatives
+    getRouteAlternatives: getRouteAlternatives,
+    getAirportCountries: getAirportCountries,
+    getAirportsBasedOnCountry: getAirportsBasedOnCountry,
+    getAirportRoutesSearch: getAirportRoutesSearch
 };

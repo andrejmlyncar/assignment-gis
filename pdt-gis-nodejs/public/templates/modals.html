@@ -30,7 +30,20 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <h4>Select Your Source and Destination</h4>
+                    <h4>Select Your Source and Destination Airport</h4>
+
+                    <label for="source-country-sel">Source Airport Country:</label>
+                    <select class="form-control" id="source-country-sel">
+                    </select>
+                    <label for="source-airport-sel">Source Airport:</label>
+                    <select class="form-control" id="source-airport-sel">
+                    </select>
+                    <label for="dest-country-sel">Destination Airport Country:</label>
+                    <select class="form-control" id="dest-country-sel">
+                    </select>
+                    <label for="dest-airport-sel">Destination Airport:</label>
+                    <select class="form-control" id="dest-airport-sel">
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -72,5 +85,17 @@
         } else {
             findRoutesFromAirport($("#route-search-button").val(), distance);
         }
+    });
+
+    $("#dest-country-sel").change(function () {
+        getAirportsBasedOnCountry($("#dest-country-sel").val(), $('#dest-airport-sel'));
+    });
+
+    $("#source-country-sel").change(function () {
+        getAirportsBasedOnCountry($("#source-country-sel").val(), $('#source-airport-sel'));
+    });
+
+    $("#connection-search-button").click(function() {
+        getSearchedRoutes($("#source-airport-sel").val(), $("#dest-airport-sel").val());
     });
 </script>

@@ -62,7 +62,7 @@ function fillAirportDetails(popup, featureData) {
 
 function findRoutesFromAirport(airport_id, distance) {
     apiCallGet('airports/' + airport_id + '/routes/dist=' + distance, null, function (data) {
-        if(data.data.length == 0) {
+        if (data.data.length == 0) {
             $('#empty-results').modal('show');
             return;
         }
@@ -117,13 +117,13 @@ function getAlternatives(route_id, type) {
     apiCallGet('routes/' + route_id + '/alternatives/type=' + type, null, function (data) {
         var layerId = type + "_alternatives_" + route_id;
         var lineColour = "#1166ff";
-        if(type=="source") {
-            lineColour= "#aa6633"
-        } else if(type=="destination") {
+        if (type == "source") {
+            lineColour = "#aa6633"
+        } else if (type == "destination") {
             lineColour = "#aa4488";
         }
 
-        if(data.data.length == 0) {
+        if (data.data.length == 0) {
             $('#empty-results').modal('show');
             return;
         }
@@ -187,15 +187,67 @@ function fillRouteDetails(popup, featureData) {
             "<strong>Distance:</strong> " + distance.toPrecision(6) + "km" +
             "<br>" +
             "<div class='text-center'>" +
-            "<button id='route-search-src' onclick='getAlternatives("+featureData.properties.id + ", \"destination\")'  class=\"btn btn-info popup-button\">Source Alternatives</button> <br>" +
-            "<button id='route-search-dest' onclick='getAlternatives("+ featureData.properties.id + ", \"source\")' class=\"btn btn-info popup-button\">Destination Alternatives</button> <br>" +
-            "<button id='route-search-comb' onclick='getAlternatives("+ featureData.properties.id + ", \"combined\")' class=\"btn btn-info popup-button\">Combined Alternatives</button>" +
+            "<button id='route-search-src' onclick='getAlternatives(" + featureData.properties.id + ", \"destination\")'  class=\"btn btn-info popup-button\">Source Alternatives</button> <br>" +
+            "<button id='route-search-dest' onclick='getAlternatives(" + featureData.properties.id + ", \"source\")' class=\"btn btn-info popup-button\">Destination Alternatives</button> <br>" +
+            "<button id='route-search-comb' onclick='getAlternatives(" + featureData.properties.id + ", \"combined\")' class=\"btn btn-info popup-button\">Combined Alternatives</button>" +
             "</div>";
 
         popup.setHTML(description);
     });
 }
 
+function getSearchedRoutes(source, destination) {
+    apiCallGet('routes/' + source + "/" + destination, null, function (data) {
+        if (data.data.length == 0) {
+            $('#empty-results').modal('show');
+            return;
+        }
+        var layerId = "routes_" + source + "_" + destination;
+        updateLayerStack(layerId);
+        map.addSource(
+            layerId, {
+                "type": "geojson",
+                "data": {
+                    "type": "FeatureCollection",
+                    "features": parseQueryResults(data.data, "Feature", null)
+                }
+            }
+        );
+
+        map.addLayer({
+            "id": layerId,
+            "type": "line",
+            "source": layerId,
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-color": "#56FF99",
+                "line-width": 3
+            }
+        });
+
+        map.on('click', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: [layerId]});
+
+            if (!features.length) {
+                return;
+            }
+
+            var feature = features[0];
+            var popup = new mapboxgl.Popup()
+                .setLngLat(map.unproject(e.point))
+                .addTo(map);
+            fillRouteDetails(popup, feature);
+        });
+
+        map.on('mousemove', function (e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: spawnedLayers});
+            map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+        });
+    });
+}
 function updateLayerStack(layerId) {
     if (map.getLayer(layerId) != undefined) {
         map.removeLayer(layerId);
@@ -232,4 +284,30 @@ function showRouteSearchModal(airport_name, airport_id) {
     $('#route-search-modal').modal('show');
     $('#modal-airport-name').append(airport_name);
     $('#route-search-button').val(airport_id);
+}
+
+function showConnectionSearchModal() {
+    $("#connection-search-modal").modal('show');
+    apiCallGet('countries/', null, function (data) {
+        console.log(data);
+        var options1 = $("#source-country-sel");
+        var options2 = $("#dest-country-sel");
+        options1.empty();
+        options2.empty();
+        $.each(data.data, function () {
+            options1.append($("<option />").val(this.country).text(this.country));
+            options2.append($("<option />").val(this.country).text(this.country));
+        });
+        getAirportsBasedOnCountry(data.data[0].country, $('#source-airport-sel'));
+        getAirportsBasedOnCountry(data.data[0].country, $('#dest-airport-sel'));
+    });
+}
+
+function getAirportsBasedOnCountry(country, options) {
+    apiCallGet('countries/' + country, null, function (data) {
+        options.empty();
+        $.each(data.data, function () {
+            options.append($("<option />").val(this.airport_id).text(this.airport));
+        });
+    });
 }
