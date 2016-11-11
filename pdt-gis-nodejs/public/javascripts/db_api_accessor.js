@@ -62,6 +62,10 @@ function fillAirportDetails(popup, featureData) {
 
 function findRoutesFromAirport(airport_id, distance) {
     apiCallGet('airports/' + airport_id + '/routes/dist=' + distance, null, function (data) {
+        if(data.data.length == 0) {
+            $('#empty-results').modal('show');
+            return;
+        }
         var layerId = "routes_" + airport_id;
         updateLayerStack(layerId);
         map.addSource(
@@ -117,6 +121,11 @@ function getAlternatives(route_id, type) {
             lineColour= "#aa6633"
         } else if(type=="destination") {
             lineColour = "#aa4488";
+        }
+
+        if(data.data.length == 0) {
+            $('#empty-results').modal('show');
+            return;
         }
 
         updateLayerStack(layerId);
