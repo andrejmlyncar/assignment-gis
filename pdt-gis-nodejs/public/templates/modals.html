@@ -7,7 +7,8 @@
             <div class="modal-body">
                 <div class="text-center">
                     <h4 id='modal-airport-name'>Search for Travel Routes From</h4>
-                    <p>Test modal body</p>
+                    <p>Please select max distance: <input id='distance-input-id' type="number" name="quantity" step="50"
+                                                          min="200"></p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -20,7 +21,8 @@
     </div>
 </div>
 
-<div aria-hidden="true" style="display: none;" class="modal fade" id="connection-search-modal" tabindex="-1" role="dialog">
+<div aria-hidden="true" style="display: none;" class="modal fade" id="connection-search-modal" tabindex="-1"
+     role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -43,6 +45,12 @@
 
 <script>
     $("#route-search-button").click(function () {
-        findRoutesFromAirport($("#route-search-button").val(), 1000);
+        var distance = $("#distance-input-id").val();
+        console.log(distance);
+        if (distance.length == 0) {
+            findRoutesFromAirport($("#route-search-button").val(), 1000000);
+        } else {
+            findRoutesFromAirport($("#route-search-button").val(), distance);
+        }
     });
 </script>

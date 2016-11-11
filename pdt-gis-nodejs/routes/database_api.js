@@ -50,8 +50,10 @@ function getAirportDetails(req, res, next) {
 }
 
 function getAirportRoutes(req, res, next) {
+    var kmDistance = req.params.distance * 1000;
     db_instance.any('SELECT id, source_airport_id, st_asgeojson(r.wkb_geometry), destination_airport_id AS destination_airport FROM routes r ' +
-        'JOIN airports dair on dair.airport_id =  r.destination_airport_id where source_airport_id = ' + req.params.airport_id)
+        'JOIN airports dair on dair.airport_id =  r.destination_airport_id where source_airport_id = ' + req.params.airport_id +
+        ' AND ST_DISTANCE(dair.wkb_geometry::geography, (SELECT wkb_geometry::geography FROM airports sair where sair.airport_id = ' + req.params.airport_id + '))<' + kmDistance)
         .then(function (data) {
             res.status(200)
                 .json({
@@ -88,5 +90,5 @@ module.exports = {
     getAirports: getAirports,
     getAirportDetails: getAirportDetails,
     getAirportRoutes: getAirportRoutes,
-    getRouteDetails: getRouteDetails,
+    getRouteDetails: getRouteDetails
 };

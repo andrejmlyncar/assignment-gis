@@ -103,7 +103,7 @@ function findRoutesFromAirport(airport_id, distance) {
         });
 
         map.on('mousemove', function (e) {
-            var features = map.queryRenderedFeatures(e.point, {layers: [layerId]});
+            var features = map.queryRenderedFeatures(e.point, {layers: spawnedLayers});
             map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
         });
     });
