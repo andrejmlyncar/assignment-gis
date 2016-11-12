@@ -6,7 +6,7 @@ Application is designed as simple lightweight application implemented in nodejs/
 - Alternative route search in proximity of 200km or source or destination airport
 
 Application is designed with following interface:
-![Screenshot](screenshot.png)
+![Screenshot](screenshot_mlyncar.png)
 
 The application has 2 separate parts, the client which is a [frontend web application](#frontend) using mapbox API and mapbox.js and the [backend application](#backend) written in [Express NodeJs](expressjs.com), backed by PostGIS. The frontend application communicates with backend using a [REST API](#api).
 
